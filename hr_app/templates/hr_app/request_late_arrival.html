@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 500px;">
+    <div class="card shadow border-danger">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-user-clock"></i> Late Arrival</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">
+                It is past 9:10 AM. You are marked as <strong>Late</strong>.
+                Please provide a valid reason to clock in.
+            </p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="fw-bold">Reason for delay</label>
+                    {{ form.reason }}
+                </div>
+                <button type="submit" class="btn btn-danger w-100">Submit Request</button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="{% url 'employee_dashboard' %}" class="text-decoration-none">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

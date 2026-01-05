@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-tasks"></i> Manage Leave Requests</h2>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Dashboard
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Employee</th>
+                            <th>Date Applied</th>
+                            <th>Duration</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leaves %}
+                        <tr>
+                            <td class="fw-bold text-primary">
+                                {{ leave.employee.user.get_full_name }}
+                                <div class="small text-muted">{{ leave.employee.department }}</div>
+                            </td>
+
+                            <td>
+                                {{ leave.created_at|date:"M d, Y" }}
+                                <div class="small text-muted">{{ leave.created_at|date:"h:i A" }}</div>
+                            </td>
+
+                            <td>
+                                <div><span class="fw-bold">From:</span> {{ leave.start_date|date:"M d" }}</div>
+                                <div><span class="fw-bold">To:</span> {{ leave.end_date|date:"M d" }}</div>
+                            </td>
+
+                            <td>
+                                <span class="d-inline-block text-truncate" style="max-width: 200px;" title="{{ leave.reason }}">
+                                    {{ leave.reason }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if leave.status == 'Pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif leave.status == 'Approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif leave.status == 'Rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ leave.status }}</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center">
+                                {% if leave.status == 'Pending' %}
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'update_leave_status' leave.id 'Approved' %}" class="btn btn-sm btn-success" title="Approve">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                        <a href="{% url 'update_leave_status' leave.id 'Rejected' %}" class="btn btn-sm btn-danger" title="Reject">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted small"><i class="fas fa-lock"></i> Processed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-folder-open fa-3x mb-3 text-secondary"></i>
+                                <p class="mb-0">No leave requests found in the database.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

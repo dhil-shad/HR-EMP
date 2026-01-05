@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-plus"></i> Onboard New Employee</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <h5 class="text-primary mb-3">1. Account Details</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="fw-bold">First Name</label>
+                                {{ user_form.first_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="fw-bold">Last Name</label>
+                                {{ user_form.last_name }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold">Username</label>
+                            {{ user_form.username }}
+                            
+                            {% if user_form.username.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ user_form.username.errors.0 }}
+                                </div>
+                            {% endif %}
+                            
+                            <div id="username-error" class="text-danger small mt-1" style="display: none;">
+                                <i class="fas fa-times-circle"></i> This username is already taken.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold">Email Address</label>
+                            {{ user_form.email }}
+                            
+                            {% if user_form.email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ user_form.email.errors.0 }}
+                                </div>
+                            {% endif %}
+
+                            <div id="email-error" class="text-danger small mt-1" style="display: none;">
+                                <i class="fas fa-times-circle"></i> A user with this email already exists.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold">Password</label>
+                            {{ user_form.password }}
+                            <small class="text-muted">Set a temporary password for the employee.</small>
+                        </div>
+
+                        <hr>
+
+                        <h5 class="text-primary mb-3">2. Job Details</h5>
+                        
+                        <div class="mb-3">
+                            <label class="fw-bold">Department</label>
+                            {{ profile_form.department }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="fw-bold">Job Title</label>
+                                {{ profile_form.job_title }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="fw-bold">Hourly Salary ($)</label>
+                                {{ profile_form.salary_per_hour }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="fw-bold">Profile Picture</label>
+                            {{ profile_form.profile_pic }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold">Status</label>
+                            {{ profile_form.status }}
+                        </div>
+
+                        <button type="submit" id="submit-btn" class="btn btn-success btn-lg w-100 mt-3">
+                            <i class="fas fa-check-circle"></i> Create Employee
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="{% url 'manage_leaves' %}" class="text-muted">Back to Admin Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameInput = document.getElementById('id_username');
+        const emailInput = document.getElementById('id_email');
+        const usernameError = document.getElementById('username-error');
+        const emailError = document.getElementById('email-error');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // 1. Debounce Function: Prevents API spam while typing
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        // 2. The Validation Logic
+        function validateField(inputElement, errorElement, type) {
+            const value = inputElement.value;
+            
+            // Don't check empty strings
+            if (value.length > 0) {
+                fetch(`{% url 'check_user_existence' %}?${type}=${value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let isTaken = false;
+                        if (type === 'username') isTaken = data.username_taken;
+                        if (type === 'email') isTaken = data.email_taken;
+
+                        if (isTaken) {
+                            // Show Error
+                            inputElement.classList.add('is-invalid');
+                            inputElement.classList.remove('is-valid');
+                            errorElement.style.display = 'block';
+                            submitBtn.disabled = true; // Block submit
+                        } else {
+                            // Clear Error
+                            inputElement.classList.remove('is-invalid');
+                            inputElement.classList.add('is-valid');
+                            errorElement.style.display = 'none';
+                            
+                            // Only enable submit if NO errors are visible
+                            if (usernameError.style.display === 'none' && emailError.style.display === 'none') {
+                                submitBtn.disabled = false;
+                            }
+                        }
+                    });
+            } else {
+                // Reset if empty
+                inputElement.classList.remove('is-invalid');
+                inputElement.classList.remove('is-valid');
+                errorElement.style.display = 'none';
+            }
+        }
+
+        // 3. Create "Debounced" versions of the validator
+        // We wait 500ms after the user stops typing to trigger the check
+        const checkUsername = debounce(() => validateField(usernameInput, usernameError, 'username'), 500);
+        const checkEmail = debounce(() => validateField(emailInput, emailError, 'email'), 500);
+
+        // 4. Listen for 'input' (typing) instead of 'blur'
+        usernameInput.addEventListener('input', checkUsername);
+        emailInput.addEventListener('input', checkEmail);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="fas fa-running"></i> Late Arrival Requests</h2>
+    
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Employee</th>
+                        <th>Time Arrived</th>
+                        <th>Reason</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td class="fw-bold">{{ req.employee.user.get_full_name }}</td>
+                        <td>{{ req.requested_at|date:"h:i A" }}</td>
+                        <td>{{ req.reason }}</td>
+                        <td>
+                            <a href="{% url 'update_late_arrival' req.id 'Approved' %}" class="btn btn-sm btn-success">
+                                <i class="fas fa-check"></i> Clock In
+                            </a>
+                            <a href="{% url 'update_late_arrival' req.id 'Rejected' %}" class="btn btn-sm btn-danger">
+                                <i class="fas fa-times"></i> Reject
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">No pending late arrivals.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

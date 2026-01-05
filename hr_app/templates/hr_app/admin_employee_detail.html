@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-id-badge"></i> Employee Profile</h5>
+                    <a href="{% url 'edit_employee' profile.id %}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-edit"></i> Edit This Profile
+                    </a>
+                </div>
+                <div class="card-body">
+                    
+                    <div class="text-center mb-4">
+                        <div class="mb-3">
+                            {% if profile.profile_pic %}
+                                <img src="{{ profile.profile_pic.url }}" class="rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover;">
+                            {% else %}
+                                <div class="display-1 text-secondary">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <h2 class="fw-bold">{{ profile.user.get_full_name }}</h2>
+                        <p class="text-muted">{{ profile.job_title }}</p>
+                        
+                        {% if profile.status == 'Active' %}
+                            <span class="badge bg-success fs-6 px-3 py-2 rounded-pill">Active</span>
+                        {% elif profile.status == 'On Leave' %}
+                            <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill">On Leave</span>
+                        {% else %}
+                            <span class="badge bg-danger fs-6 px-3 py-2 rounded-pill">{{ profile.status }}</span>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+
+                    <div class="row g-4 mt-2">
+                        <div class="col-md-6 border-end">
+                            <h5 class="text-primary mb-3">Personal Information</h5>
+                            <div class="mb-3">
+                                <label class="small text-muted fw-bold">USERNAME</label>
+                                <div class="fs-5">{{ profile.user.username }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small text-muted fw-bold">EMAIL</label>
+                                <div class="fs-5">{{ profile.user.email }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small text-muted fw-bold">JOINED</label>
+                                <div class="fs-5">{{ profile.user.date_joined|date:"F j, Y" }}</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 ps-md-4">
+                            <h5 class="text-primary mb-3">Job Details</h5>
+                            <div class="mb-3">
+                                <label class="small text-muted fw-bold">EMPLOYEE ID</label>
+                                <div class="fs-5 text-dark font-monospace">#{{ profile.employee_id }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small text-muted fw-bold">DEPARTMENT</label>
+                                <div class="fs-5">{{ profile.department }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small text-muted fw-bold">HOURLY RATE</label>
+                                <div class="fs-5">${{ profile.salary_per_hour }} / hr</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="card-footer bg-light text-center py-3">
+                    <a href="{% url 'all_employees' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Directory
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

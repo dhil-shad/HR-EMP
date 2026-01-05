@@ -1,0 +1,13 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Access Error!</h4>
+        <p>{{ message }}</p>
+        <hr>
+        <p class="mb-0">Please contact your system administrator or HR department.</p>
+        <p><a href="{% url 'logout' %}">Go back to login</a></p>
+    </div>
+</div>
+{% endblock %}

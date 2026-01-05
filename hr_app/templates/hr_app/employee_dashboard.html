@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Welcome, {{ request.user.first_name }}!</h2>
+            <p class="text-muted">{{ profile.job_title }} | {{ profile.department }}</p>
+        </div>
+        <div>
+            <span class="text-muted me-2">My Status:</span>
+            {% if profile.status == 'Active' %}
+                <span class="badge bg-success px-3 py-2 rounded-pill">Active</span>
+            {% elif profile.status == 'On Leave' %}
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">On Leave</span>
+            {% else %}
+                <span class="badge bg-danger px-3 py-2 rounded-pill">{{ profile.status }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="text-primary mb-3">Work Profile</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <small class="text-muted fw-bold">Employee ID</small>
+                            <div class="fw-bold text-dark">{{ profile.employee_id }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted fw-bold">Department</small>
+                            <div>{{ profile.department }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted fw-bold">Job Title</small>
+                            <div>{{ profile.job_title }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-user-clock text-info"></i> Attendance Status</h5>
+                </div>
+                <div class="card-body text-center py-4">
+                    
+                    {% if current_shift %}
+                        <div class="alert alert-success border-0 shadow-sm d-inline-block px-5">
+                            <div class="display-4 mb-2"><i class="fas fa-clock"></i></div>
+                            <h4 class="alert-heading fw-bold">WORKING NOW</h4>
+                            <p class="mb-0">
+                                You clocked in at <strong>{{ current_shift.check_in|date:"h:i A" }}</strong>.
+                            </p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <form action="{% url 'attendance_toggle' %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-lg px-5 shadow-sm">
+                                    <i class="fas fa-sign-out-alt"></i> CLOCK OUT
+                                </button>
+                            </form>
+                            <small class="text-muted mt-2 d-block">
+                                (If it is before 6:00 PM, you will be asked for a reason.)
+                            </small>
+                        </div>
+
+                    {% elif today_record %}
+                        <div class="alert alert-secondary border-0 shadow-sm d-inline-block px-5">
+                            <div class="display-4 mb-2"><i class="fas fa-check-circle"></i></div>
+                            <h4 class="alert-heading fw-bold">SHIFT COMPLETED</h4>
+                            <p class="mb-0">
+                                You worked from <strong>{{ today_record.check_in|date:"h:i A" }}</strong> 
+                                to <strong>{{ today_record.check_out|date:"h:i A" }}</strong>.
+                            </p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button class="btn btn-secondary btn-lg px-5" disabled>
+                                See you tomorrow!
+                            </button>
+                        </div>
+
+                    {% else %}
+                        <div class="alert alert-light border shadow-sm d-inline-block px-5">
+                            <div class="display-4 text-secondary mb-2"><i class="fas fa-map-marker-alt"></i></div>
+                            <h4 class="text-secondary fw-bold">OFF DUTY</h4>
+                            <p class="text-muted mb-0">Please clock in from the office.</p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <form id="clockInForm" action="{% url 'attendance_toggle' %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="latitude" id="id_latitude">
+                                <input type="hidden" name="longitude" id="id_longitude">
+                                
+                                <button type="button" onclick="getLocationAndSubmit()" class="btn btn-primary btn-lg px-5 shadow-sm">
+                                    <i class="fas fa-sign-in-alt"></i> CLOCK IN
+                                </button>
+                            </form>
+                            
+                            <small id="locationStatus" class="text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle"></i> GPS check required.
+                            </small>
+                        </div>
+
+                        <script>
+                            function getLocationAndSubmit() {
+                                const status = document.getElementById('locationStatus');
+                                const form = document.getElementById('clockInForm');
+                                const latInput = document.getElementById('id_latitude');
+                                const lonInput = document.getElementById('id_longitude');
+
+                                if (!navigator.geolocation) {
+                                    status.innerHTML = "<span class='text-danger'>Geolocation is not supported by your browser.</span>";
+                                    return;
+                                }
+
+                                status.innerHTML = "<span class='text-info'><i class='fas fa-spinner fa-spin'></i> Verifying location...</span>";
+
+                                navigator.geolocation.getCurrentPosition(
+                                    (position) => {
+                                        // Success: Populate hidden fields and submit
+                                        latInput.value = position.coords.latitude;
+                                        lonInput.value = position.coords.longitude;
+                                        status.innerHTML = "<span class='text-success'>Location Found! Submitting...</span>";
+                                        form.submit();
+                                    },
+                                    (error) => {
+                                        // Error: Handle permission denial
+                                        let errorMsg = "Unable to retrieve location.";
+                                        if (error.code === 1) { errorMsg = "Please click 'Allow' on the location popup."; }
+                                        status.innerHTML = `<span class='text-danger'>${errorMsg}</span>`;
+                                    },
+                                    {
+                                        enableHighAccuracy: true,
+                                        timeout: 10000,
+                                        maximumAge: 0
+                                    }
+                                );
+                            }
+                        </script>
+                    {% endif %}
+                    </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <a href="{% url 'apply_leave' %}" class="card shadow-sm text-decoration-none h-100 hover-card">
+                        <div class="card-body text-center text-primary">
+                            <i class="fas fa-plane-departure fa-2x mb-2"></i>
+                            <h6 class="fw-bold mb-0">Apply for Leave</h6>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="{% url 'salary_report' %}" class="card shadow-sm text-decoration-none h-100 hover-card">
+                        <div class="card-body text-center text-success">
+                            <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i>
+                            <h6 class="fw-bold mb-0">My Salary Report</h6>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow border-0 h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-bullhorn"></i> Notice Board</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for notice in announcements %}
+                            <li class="list-group-item p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small class="text-muted"><i class="far fa-calendar-alt"></i> {{ notice.date_posted|date:"M d" }}</small>
+                                    <span class="badge bg-light text-dark border">Admin</span>
+                                </div>
+                                <h6 class="fw-bold mb-1">{{ notice.title }}</h6>
+                                <p class="small text-secondary mb-0 text-truncate">{{ notice.content }}</p>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-center py-5 text-muted">
+                                <i class="fas fa-clipboard-check fa-2x mb-3 text-secondary"></i>
+                                <p class="mb-0">No new announcements.</p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

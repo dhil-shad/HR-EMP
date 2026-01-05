@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    
+    <div class="row">
+        
+        <div class="col-md-6 mb-4">
+            <div class="card shadow border-top border-4 border-info h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-bullhorn"></i> Post Announcement</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">
+                        This message will appear on the dashboard of <strong>all employees</strong> immediately.
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="fw-bold">Title / Headline</label>
+                            {{ form.title }}
+                            </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold">Message Content</label>
+                            {{ form.content }}
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i> Post to Notice Board
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow border-0 h-100">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Announcement History</h5>
+                    <span class="badge bg-secondary">{{ announcements.count }} Posts</span>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for notice in announcements %}
+                            <li class="list-group-item p-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="me-2">
+                                        <div class="mb-1 text-muted small">
+                                            <i class="far fa-calendar-alt"></i> {{ notice.date_posted|date:"M d, Y" }}
+                                            &bull; <i class="fas fa-user-edit"></i> {{ notice.posted_by.username }}
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-1">{{ notice.title }}</h6>
+                                        <p class="small text-secondary mb-0 text-break">{{ notice.content }}</p>
+                                    </div>
+
+                                    <form action="{% url 'delete_announcement' notice.id %}" method="post">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0" 
+                                                title="Delete this notice" 
+                                                onclick="return confirm('Are you sure you want to PERMANENTLY delete this notice?');">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-center py-5 text-muted">
+                                <i class="fas fa-folder-open fa-2x mb-3 text-secondary"></i>
+                                <p class="mb-0">No announcements found.</p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

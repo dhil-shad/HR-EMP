@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 600px;">
+    
+    <div class="card shadow">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0">
+                <i class="fas fa-user-edit"></i> Edit Employee: {{ profile.user.get_full_name }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="text-center mb-4">
+                    <img id="avatarPreview" 
+                         src="{% if profile.profile_pic %}{{ profile.profile_pic.url }}{% else %}#{% endif %}" 
+                         class="rounded-circle shadow-sm border" 
+                         style="width: 120px; height: 120px; object-fit: cover; {% if not profile.profile_pic %}display: none;{% endif %}">
+                    
+                    <div id="defaultIcon" class="display-1 text-secondary" style="{% if profile.profile_pic %}display: none;{% endif %}">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    
+                    <p class="small text-muted mt-2 mb-0">Profile Photo</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Employee ID</label>
+                        <input type="text" class="form-control bg-light" value="{{ profile.employee_id }}" readonly>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Department</label>
+                        {{ form.department }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold">Job Title</label>
+                    {{ form.job_title }}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Hourly Salary ($)</label>
+                        {{ form.salary_per_hour }}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold text-primary">Current Status</label>
+                        {{ form.status }}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="fw-bold">Update Profile Picture</label>
+                    {{ form.profile_pic }}
+                </div>
+
+                <div class="d-grid gap-2 mt-3">
+                    <button type="submit" class="btn btn-success btn-lg">Save Changes</button>
+                    <a href="{% url 'all_employees' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow border-danger mt-4 mb-5">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="text-danger fw-bold mb-1"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h5>
+                <p class="text-muted small mb-0">Deleting this employee will remove their login, attendance, and leave history permanently.</p>
+            </div>
+            
+            <form method="post" action="{% url 'delete_employee' profile.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to PERMANENTLY delete this employee? This cannot be undone.');">
+                    <i class="fas fa-trash-alt"></i> Delete Employee
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 1. Select elements
+    const fileInput = document.getElementById('id_profile_pic'); // Default Django ID
+    const imgPreview = document.getElementById('avatarPreview');
+    const defaultIcon = document.getElementById('defaultIcon');
+
+    // 2. Listen for file selection
+    if (fileInput) {
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Update image source to the file data
+                    imgPreview.src = e.target.result;
+                    
+                    // Show image, hide icon
+                    imgPreview.style.display = 'inline-block';
+                    if (defaultIcon) {
+                        defaultIcon.style.display = 'none';
+                    }
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+</script>
+{% endblock %}
