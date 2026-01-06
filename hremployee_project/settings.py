@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+import dj_database_url
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,8 +26,7 @@ SECRET_KEY = 'django-insecure--wae8y%9k8ni69b7cs!6wq%6m61emcx^htk-y+w1ndzj%^0$rp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['.vercel.app', '.now.sh', '127.0.0.1', 'localhost']
 
 # Application definition
 

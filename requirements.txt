@@ -1,0 +1,15 @@
+asgiref==3.10.0
+distlib==0.4.0
+dj-database-url==3.1.0
+Django==5.2.7
+filelock==3.19.1
+gunicorn==23.0.0
+multipledispatch==1.0.0
+mysql-connector==2.2.9
+packaging==25.0
+platformdirs==4.4.0
+psycopg2-binary==2.9.11
+sqlparse==0.5.3
+tzdata==2025.2
+virtualenv==20.34.0
+whitenoise==6.11.0
